@@ -1,0 +1,13 @@
+{
+    "name": "VSS_Example",
+    "version": "1.0.0",
+    "description": "VSS Feeder PoC based on simulators",
+    "author": "Stefan Wysocki <stefan.wysocki@tietoevry.com>",
+    "main": "vssfeeder.js",
+    "scripts": {
+        "start": "node vssfeeder.js"
+    },
+    "dependencies": {
+        "xml2js": "^0.4.23"
+    }
+}
