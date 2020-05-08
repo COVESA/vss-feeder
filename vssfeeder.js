@@ -19,7 +19,7 @@ client.connect(5678, '127.0.0.1', function() {
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
-const adapter = new FileSync('db.json')
+const adapter = new FileSync('/usr/shared/db/db.json')
 const db = low(adapter)
 
 // TODO Database schema should be generated from vspec
