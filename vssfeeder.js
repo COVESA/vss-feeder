@@ -24,25 +24,25 @@ const db = low(adapter)
 
 // TODO Database schema should be generated from vspec
 db.defaults({
-	"Vehicle": {
-	  "VersionVSS": {
-		"Major": 2,
-		"Minor": 0,
-		"Patch": 0
+	"vehicle": {
+	  "versionVSS": {
+		"major": 2,
+		"minor": 0,
+		"patch": 0
 	  },
-	  "Drivetrain": {
-		"InternalCombustionEngine": {
-		  "Engine": {
-			"Speed": {}
+	  "drivetrain": {
+		"internalCombustionEngine": {
+		  "engine": {
+			"speed": {}
 		  }
 		},
-		"Transmission": {
-		  "Gear": {}
+		"transmission": {
+		  "gear": {}
 		},
-		"FuelSystem": {
-		  "TankCapacity": {},
-		  "Level": {},
-		  "InstantConsumption": {}
+		"fuelSystem": {
+		  "tankCapacity": {},
+		  "level": {},
+		  "instantConsumption": {}
 		}
 	  }
 	}
@@ -56,16 +56,16 @@ client.on('data', function(data) {
 			var exterior = result.Message.Event[0].root[0].thisVehicle[0].exterior[0];
 			var rpmValue = exterior.engineCompartment[0].engine[0].Properties[0].actualRpm[0];
 			var fuelproperties = exterior.fueling[0].fuelType[0].tank[0].Properties[0];
-			var maxAmount = fuelproperties.maxAmount;
+			var maxAmount = fuelproperties.maxAmount[0];
 			var actualAmount = fuelproperties.actualAmount;
 			var currentConsumption = fuelproperties.currentConsumption;
 			var currentGear = exterior.gearUnit[0].Properties[0].currentGear[0];
 		
-			db.set('Vehicle.Drivetrain.InternalCombustionEngine.Engine.Speed', rpmValue)
-			.set('Vehicle.Drivetrain.FuelSystem.TankCapacity', maxAmount)
-			.set('Vehicle.Drivetrain.FuelSystem.Level',actualAmount/maxAmount*100)
-			.set('Vehicle.Drivetrain.FuelSystem.InstantConsumption', currentConsumption)
-			.set("Vehicle.Drivetrain.Transmission.Gear", currentGear)
+			db.set('vehicle.drivetrain.internalCombustionEngine.engine.speed', rpmValue)
+			.set('vehicle.drivetrain.fuelSystem.tankCapacity', maxAmount)
+			.set('vehicle.drivetrain.fuelSystem.level',Math.floor(actualAmount / maxAmount * 100))
+			.set('vehicle.drivetrain.fuelSystem.instantConsumption', currentConsumption)
+			.set("vehicle.drivetrain.transmission.gear", currentGear)
 			.write();
 		}
 	});
