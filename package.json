@@ -8,7 +8,9 @@
         "start": "node vssfeeder.js"
     },
     "dependencies": {
-        "lowdb": "^1.0.0",
-        "xml2js": "^0.4.23"
+        "sqlite3": "^4.2.0",
+        "xpath": "^0.0.27",
+        "xmldom": "0.3.0"
     }
 }
+
