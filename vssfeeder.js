@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+const DEFAULT_SIMULATOR_IP = '127.0.0.1';
+let simulatorIp = process.env.SIMULATOR_IP ? process.env.SIMULATOR_IP : DEFAULT_SIMULATOR_IP;
+
 var net = require('net');
 
 var xpath = require('xpath')
@@ -10,7 +13,8 @@ var xpath = require('xpath')
 
 var client = new net.Socket();
 
-client.connect(5678, '10.0.2.2', function() {
+let address =
+client.connect(5678, simulatorIp, function() {
 	console.log('Connected! Subscribing.');
 	client.write('<?xml version="1.0" encoding="UTF-8"?>\n');
 	client.write('<Message><Event Name="EstablishConnection"/>\n');
