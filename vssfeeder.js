@@ -31,21 +31,45 @@ let sqlite_db = new sqlite3.Database(dbPath, (err) => {
 });
 
 let values_mapping = new Map();
-values_mapping.set('drivetrain.internalCombustionEngine.engine.speed', '/Message/Event/root/thisVehicle/exterior/engineCompartment/engine/Properties/actualRpm');
-values_mapping.set('speed', '/Message/Event/root/thisVehicle/physicalAttributes/Properties/speed');
-values_mapping.set('drivetrain.transmission.gear', '/Message/Event/root/thisVehicle/exterior/gearUnit/Properties/currentGear');
-values_mapping.set('drivetrain.fuelsystem.tankCapacity', '/Message/Event/root/thisVehicle/exterior/fueling/fuelType/tank/Properties/maxAmount');
-values_mapping.set('drivetrain.fuelSystem.level', '/Message/Event/root/thisVehicle/exterior/fueling/fuelType/tank/Properties/actualAmount');
-values_mapping.set('drivetrain.fuelsystem.instantConsumption', '/Message/Event/root/thisVehicle/exterior/fueling/fuelType/tank/Properties/currentConsumption');
+values_mapping.set('drivetrain.internalCombustionEngine.engine.speed', {
+		xpath: '/Message/Event/root/thisVehicle/exterior/engineCompartment/engine/Properties/actualRpm',
+});
+values_mapping.set('speed', {
+		xpath: '/Message/Event/root/thisVehicle/physicalAttributes/Properties/speed',
+});
+values_mapping.set('drivetrain.transmission.gear', {
+	xpath: '/Message/Event/root/thisVehicle/exterior/gearUnit/Properties/currentGear'
+});
+values_mapping.set('drivetrain.fuelsystem.tankCapacity', {
+	xpath: '/Message/Event/root/thisVehicle/exterior/fueling/fuelType/tank/Properties/maxAmount'
+});
+values_mapping.set('drivetrain.fuelSystem.level', {
+	xpath:'/Message/Event/root/thisVehicle/exterior/fueling/fuelType/tank/Properties/actualAmount',
+	convert: function(value) {
+		return value;
+	}
+});
+values_mapping.set('drivetrain.fuelsystem.instantConsumption', {
+	xpath: '/Message/Event/root/thisVehicle/exterior/fueling/fuelType/tank/Properties/currentConsumption'
+});
 createSchema(sqlite_db);
 
 client.setEncoding('utf-8');
 client.on('data', function(data) {
 	var doc = new dom().parseFromString(data);
 	var query = sqlite_db.prepare("REPLACE INTO vss_data (key, value, timestamp) VALUES(?, ?," + Date.now() + ");");
+	let value;
+	let values = new Map();
 	for (let [key, value] of values_mapping) {
-		query.run(key, xpath.select("string(" + value + ")", doc));
-		console.log(key + ": " + xpath.select("string(" + value + ")", doc));
+		values.set(key, xpath.select("string(" + value.xpath + ")", doc));
+		console.log("Raw value parse: " + key + ": " + value);
+	}
+	for (let [key, value] of values) {
+		if (key == 'drivetrain.fuelSystem.level') {
+			value = Math.floor(value / values.get('drivetrain.fuelsystem.tankCapacity') * 100);
+		}
+		query.run(key, value);
+		console.log("Final value parse: " + key + ": " + value);
 	}
 });
 
@@ -58,6 +82,10 @@ client.on('close', function() {
 	});
 	console.log('Connection closed');
 });
+
+function getRawValue(doc, key) {
+	return xpath.select("string(" + values_mapping.get(key) + ")", doc);
+}
 
 function createSchema(db) {
 	var query = `CREATE TABLE IF NOT EXISTS vss_data (
